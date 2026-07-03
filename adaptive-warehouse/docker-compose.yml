@@ -1,0 +1,32 @@
+# Reproducible PostgreSQL 16 for all teammates.
+#   docker compose up -d
+# pg_stat_statements is preloaded via command flags so the monitor works
+# immediately (no manual postgresql.conf editing).
+services:
+  db:
+    image: postgres:16
+    container_name: salesdw_pg
+    environment:
+      POSTGRES_DB: salesdw
+      POSTGRES_USER: wh
+      POSTGRES_PASSWORD: wh
+    ports:
+      - "5433:5432"
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wh -d salesdw"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
